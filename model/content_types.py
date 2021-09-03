@@ -13,3 +13,5 @@ class ContentType(Enum):
     STICKER = 6
     EMPTY = 7
     CALL = 8
+    SUBSCRIBE = 9
+    AUDIO = 10

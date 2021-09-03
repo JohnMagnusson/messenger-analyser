@@ -10,3 +10,4 @@ class GroupChat:
         """
         self.users = users
         self.messages = messages
+        # addd dict with each user as key and there corresponidn gmessages
