@@ -84,7 +84,7 @@ class JsonParser:
         """
 
         if content_type == ContentType.TEXT:
-            return dict_message["content"].encode("latin_1").decode("utf_8")  # Fixing encoding of the data
+            return dict_message["content"].encode("latin_1").decode("utf_8").lower()  # Fixing encoding of the data
         elif content_type == ContentType.SHARE:
             if "share" in dict_message:
                 if "link" in dict_message["share"]:  # For sharing links
