@@ -39,6 +39,48 @@ def get_initials_from_names(names):
     return initials
 
 
+def plot_message_length_per_user(message_length_per_user):
+    """
+    Plots a bar diagram showing the mean, std and median message length per user in the chat.
+    :param message_length_per_user: dict(user, messages lengths)
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    names = get_initials_from_names(np.array(list(message_length_per_user.keys())))
+    messages_length = np.array(list(message_length_per_user.values()))
+
+    means, stds, medians = [], [], []
+    for user_list in messages_length:
+        means.append(np.mean(user_list))
+        stds.append(np.std(user_list))
+        medians.append(np.median(user_list))
+
+    # Sort on median
+    zipped = zip(names, means, stds, medians)
+    sorted_by_second = sorted(zipped, key=lambda tup: tup[1], reverse=True)
+    names, means, stds, medians = zip(*sorted_by_second)
+
+    x_pos = np.arange(len(names))
+    w = 0.4
+    ax.bar(x_pos, means, width=w, yerr=stds, align='center', ecolor='black', capsize=5, label="Mean")
+    ax.bar(x_pos + w, medians, width=w, align='center', label="Median")
+
+    ax.set_ylabel('Messages length')
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(names)
+    ax.set_title('The average length of a message sent by an user')
+    # ax.yaxis.grid(True)
+
+    # Save the figure and show
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig("plots/average_length_of_message_for_users.png")
+    plt.show()
+
+
 def plot_most_used_words(word_times, nr_word_to_plot=10, is_percent=True):
     """
     Plots the most used words in a bar diagram.
@@ -77,5 +119,3 @@ def plot_most_used_words(word_times, nr_word_to_plot=10, is_percent=True):
         plt.title('The top ' + str(nr_word_to_plot) + ' most used words in the chat')
 
     plt.show()
-
-    ok = 3

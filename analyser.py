@@ -11,6 +11,18 @@ class Analyser:
             user_nr_messages[message.sender] += 1
         return user_nr_messages
 
+    def get_message_length_per_user(self):
+        """
+        Gets the length of all messages user in the group has sent
+        :return: dict(user, list(message_length))
+        """
+
+        user_message_lengths = {key: [] for key in self.group_chat.users}
+        for message in self.group_chat.messages:
+            if message.content_type == ContentType.TEXT:
+                user_message_lengths[message.sender].append(len(message.content))
+        return user_message_lengths
+
     def get_word_sent_dict(self):
         word_time = dict()
         for message in self.group_chat.messages:

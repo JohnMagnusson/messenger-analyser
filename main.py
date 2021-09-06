@@ -8,10 +8,14 @@ def main():
     group_chat = data_manager.load_group_chat("test_alvsjo_1")
     analyser = Analyser(group_chat)
     #
-    # # user_nr_messages = analyser.get_number_messages_per_user()
-    # # plot_nr_messages_per_user(user_nr_messages)
-    word_sent = analyser.get_word_sent_dict()
-    plot_most_used_words(word_sent, 10)
+    # user_nr_messages = analyser.get_number_messages_per_user()
+    # plot_nr_messages_per_user(user_nr_messages)
+
+    # word_sent = analyser.get_word_sent_dict()
+    # plot_most_used_words(word_sent, 10)
+
+    message_length_per_user = analyser.get_message_length_per_user()
+    plot_message_length_per_user(message_length_per_user)
     # ok = 3
 
 if __name__ == '__main__':
