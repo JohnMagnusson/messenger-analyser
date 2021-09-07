@@ -10,12 +10,16 @@ def main():
     #
     # user_nr_messages = analyser.get_number_messages_per_user()
     # plot_nr_messages_per_user(user_nr_messages)
-
+    #
     # word_sent = analyser.get_word_sent_dict()
-    # plot_most_used_words(word_sent, 10)
-
-    message_length_per_user = analyser.get_message_length_per_user()
-    plot_message_length_per_user(message_length_per_user)
+    # plot_most_used_words(word_sent, 20)
+    # #
+    # message_length_per_user = analyser.get_message_length_per_user()
+    # plot_message_length_per_user(message_length_per_user)
+    #
+    # chat_activity = analyser.get_users_activity_over_time()
+    # plot_chat_activity(chat_activity)
+    # plot_individuals_chat_activity(chat_activity)
     # ok = 3
 
 if __name__ == '__main__':
