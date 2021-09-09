@@ -208,3 +208,184 @@ def plot_individuals_chat_activity_over_time(chat_activity, window_size=30):
     plt.show()
 
 
+def plot_chat_activity_over_week(chat_activity, normalize=True):
+    """
+    Displays the chat activity for the chat aggregated over a week.
+    :param chat_activity: Dict containing the activity for individuals over dates
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    time = np.array(list(chat_activity.keys()))
+    messages_sent = [sum(name_dict.values()) for name_dict in chat_activity.values()]
+
+    # Sort so we get the weekday correct
+    time, messages_sent = sort_values(time, messages_sent, 0)
+
+    if normalize:
+        messages_sent_arr = np.array(messages_sent)
+        messages_sent = messages_sent_arr / sum(messages_sent_arr)
+
+    cm = plt.get_cmap('Accent')
+
+    ax.plot(time, messages_sent, color=cm(0.1), marker="o")
+    ax.set_xlabel('Time')
+    if normalize:
+        ax.set_ylabel('Ratio of messages sent %')
+    else:
+        ax.set_ylabel('Messages sent')
+    plt.title('The chats activity over a week')
+
+    ax.set_xticklabels(["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+
+    plt.grid()
+
+    plt.savefig("plots/chat_activity_week.png")
+    plt.show()
+
+
+def plot_individuals_chat_activity_over_week(chat_activity, normalize=True):
+    """
+    Displays the chat activity for each user in the chat aggregated over a week.
+    :param chat_activity: Dict containing the activity for individuals over dates.
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    names = list(list(chat_activity.values())[0].keys())
+    time = np.array(list(chat_activity.keys()))
+    unwrapped_values = [list(name_dict.values()) for name_dict in chat_activity.values()]
+
+    # Sort so we get the weekday correct
+    time, day_user_sent = sort_values(time, unwrapped_values, 0)
+
+    # Transpose so we get users as key with there entries as values
+    users_messages_sent = list(map(list, itertools.zip_longest(*day_user_sent, fillvalue=None)))
+
+    # Sort on name so we get them nicely in the legend
+    names_sorted, users_messages_sent_sorted = sort_values(names, users_messages_sent, 0)
+
+    # We normalize to see the relative difference in behaviour between the users
+    if normalize:
+        for i, user_messages_sent in enumerate(users_messages_sent_sorted):
+            users_messages_sent_sorted[i] = np.array(user_messages_sent) / sum(user_messages_sent)
+
+    # Plots
+    for i in range(len(names)):
+        ax.plot(time, users_messages_sent_sorted[i], label=names_sorted[i])
+
+    ax.set_xlabel('Time')
+    if normalize:
+        ax.set_ylabel('Ratio of messages sent %')
+    else:
+        ax.set_ylabel('Messages sent')
+    plt.title('The chats activity over a week')
+
+    ax.set_xticklabels(["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+
+    plt.grid()
+    plt.legend(title="names", loc="upper right")
+    plt.savefig("plots/users_chat_activity_week.png")
+    plt.show()
+
+
+def plot_chat_activity_under_day(chat_activity):
+    """
+    Displays the chat activity for the chat under 24 hours.
+    :param chat_activity: Dict containing the activity for individuals over dates.
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    time = np.array(list(chat_activity.keys()))
+    messages_sent = [sum(name_dict.values()) for name_dict in chat_activity.values()]
+
+    merged = zip(time, messages_sent)
+    sorted_by_second = sorted(merged, key=lambda tup: tup[0])
+    time, messages_sent = zip(*sorted_by_second)
+
+    cm = plt.get_cmap('Accent')
+
+    ax.plot(time, messages_sent, color=cm(0.1))
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Messages sent in slot')
+    plt.title('The chats activity over 24 hours')
+
+    hours = mdates.HourLocator()  # every hour
+    hours_fmt = mdates.DateFormatter('%H')
+
+    ax.xaxis.set_major_locator(hours)
+    ax.xaxis.set_major_formatter(hours_fmt)
+    ax.xaxis.set_minor_locator(hours)
+
+    plt.grid()
+
+    plt.savefig("plots/chat_activity_24_hour.png")
+    plt.show()
+
+
+def plot_individuals_chat_activity_under_day(chat_activity, normalize=True):
+    """
+    Displays the chat activity for the chat under 24 hours.
+    :param chat_activity: Dict containing the activity for individuals over dates.
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    names = list(list(chat_activity.values())[0].keys())
+    time = np.array(list(chat_activity.keys()))
+    unwrapped_values = [list(name_dict.values()) for name_dict in chat_activity.values()]
+
+    # sorts so the time is in order
+    merged = zip(time, unwrapped_values)
+    sorted_by_second = sorted(merged, key=lambda tup: tup[0])
+    time, unwrapped_values = zip(*sorted_by_second)
+
+    users_messages_sent = list(map(list, itertools.zip_longest(*unwrapped_values, fillvalue=None)))
+
+    if normalize:
+        for i, user_messages_sent in enumerate(users_messages_sent):
+            cool = sum(user_messages_sent)
+            tmp = np.array(user_messages_sent) / cool
+            users_messages_sent[i] = tmp
+
+    # sorts on name so we get them nicely in the legend
+    merged = zip(names, users_messages_sent)
+    sorted_by_second = sorted(merged, key=lambda tup: tup[0])
+    names, users_messages_sent = zip(*sorted_by_second)
+
+    cm = plt.get_cmap('Accent')
+
+    for i in range(len(names)):
+        ax.plot(time, users_messages_sent[i], label=names[i])
+
+    ax.set_xlabel('Time')
+    plt.title('The users chat activity over 24 hours')
+    if normalize:
+        ax.set_ylabel('Normalized message frequency in slot')
+    else:
+        ax.set_ylabel('Messages sent in slot')
+
+    hours = mdates.HourLocator()  # every hour
+    hours_fmt = mdates.DateFormatter('%H')
+
+    ax.xaxis.set_major_locator(hours)
+    ax.xaxis.set_major_formatter(hours_fmt)
+    ax.xaxis.set_minor_locator(hours)
+
+    plt.grid()
+
+    plt.legend(title="names", loc="upper right")
+    plt.savefig("plots/individuals_chat_activity_24_hour.png")
+    plt.show()
+
+
+def sort_values(v1, v2, index_to_sort_on):
+    merged = zip(v1, v2)
+    sorted_values = sorted(merged, key=lambda tup: tup[index_to_sort_on])
+    v1_sorted, v2_sorted = zip(*sorted_values)
+    return list(v1_sorted), list(v2_sorted)

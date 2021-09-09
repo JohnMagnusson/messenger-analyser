@@ -1,5 +1,7 @@
+from datetime import datetime, timedelta
+
 from model.content_types import ContentType
-from datetime import datetime
+
 
 class Analyser:
 
@@ -51,14 +53,71 @@ class Analyser:
                 time_user_message[time] = dict.fromkeys(self.group_chat.users, 0)
         return time_user_message
 
+    def get_users_activity_under_week(self):
+        """
+        Gets the user activity of the chat aggregated into a week since the chats creation.
+        The day is split into bins of each day of the week
+        :return: dict(datetime, dict(user_name, nr_messages_sent))
+        :return:
+        """
+        time_user_message = dict()
+        for message in self.group_chat.messages:
+            time = self.ts_to_weekday(message.timestamp)
+            if time in time_user_message:
+                time_user_message[time][message.sender] += 1
+            else:
+                time_user_message[time] = dict.fromkeys(self.group_chat.users, 0)
+        return time_user_message
+
+
+    def get_users_activity_under_day(self):
+        """
+        Gets the user activity of the chat aggregated into a day (24 hours) since the chats creation.
+        The day is split into bins to be able to aggregate.
+        :return: dict(datetime, dict(user_name, nr_messages_sent))
+        :return:
+        """
+        time_user_message = dict()
+        for message in self.group_chat.messages:
+            time = self.ts_to_datetime_day_slot_bined_minute(message.timestamp, minute_bin=30)
+            if time in time_user_message:
+                time_user_message[time][message.sender] += 1
+            else:
+                time_user_message[time] = dict.fromkeys(self.group_chat.users, 0)
+        return time_user_message
+
     def ts_to_datetime_all(self, ts):
         """
-        Converts the timestamp tp datetime object
+        Converts the timestamp to datetime object
         """
-        return datetime.utcfromtimestamp(ts/1000)
+        return datetime.utcfromtimestamp(ts / 1000)
 
     def ts_to_datetime_day(self, ts):
         """
-        Converts the timestamp tp datetime object, only keeping year, month and day
+        Converts the timestamp to datetime object, only keeping year, month and day
         """
-        return datetime.utcfromtimestamp(ts/1000).replace(hour=0, minute=0, second=0, microsecond=0)
+        return datetime.utcfromtimestamp(ts / 1000).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    def ts_to_weekday(self, ts):
+        """
+        Converts the timestamp to datetime object of the weekday
+        """
+        return datetime.utcfromtimestamp(ts / 1000).weekday()
+
+    def ts_to_datetime_day_slot_bined_minute(self, ts, minute_bin=10):
+        """
+        Converts the timestamp to datetime object.
+        It bins the values so they are all in the same day and in slots of 10 minutes
+        """
+
+        if minute_bin > 30:
+            raise ValueError("Cannot have bins bigger than 30 minutes")
+
+        dt = datetime.utcfromtimestamp(ts / 1000).replace(year=1900, month=1, day=1)
+        discard = timedelta(minutes=dt.minute % minute_bin,
+                            seconds=dt.second,
+                            microseconds=dt.microsecond)
+        dt -= discard
+        if discard >= timedelta(minutes=minute_bin / 2):
+            dt += timedelta(minutes=minute_bin)
+        return dt
