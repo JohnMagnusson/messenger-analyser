@@ -121,3 +121,16 @@ class Analyser:
         if discard >= timedelta(minutes=minute_bin / 2):
             dt += timedelta(minutes=minute_bin)
         return dt
+
+    def get_users_content_usage(self):
+        """
+        Gets information regarding what type of content the users sends in the chat
+        :return: dict(users, dict(contentType, nrMessagesSent)
+        """
+        enums = [e for e in ContentType]
+        users_content = {key: dict.fromkeys(enums, 0) for key in self.group_chat.users}
+        for message in self.group_chat.messages:
+            users_content[message.sender][message.content_type] += 1
+
+        return users_content
+

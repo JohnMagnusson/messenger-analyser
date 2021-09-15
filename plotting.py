@@ -389,3 +389,109 @@ def sort_values(v1, v2, index_to_sort_on):
     sorted_values = sorted(merged, key=lambda tup: tup[index_to_sort_on])
     v1_sorted, v2_sorted = zip(*sorted_values)
     return list(v1_sorted), list(v2_sorted)
+
+
+def plot_chat_content_usage_group(content_usage, normalize=True):
+    """
+    Plots what type of content is sent in the group
+    :param content_usage: The content sent
+    :param normalize: If to show in normalized format or in numbers
+    """
+
+    fig = plt.figure(1, (8, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    user_content = [list(content_usage[key].values()) for key in content_usage]
+    content_user = list(map(list, itertools.zip_longest(*user_content, fillvalue=None)))  # transpose
+    content_representation = [sum(content_usage) for content_usage in content_user]
+    content_list = list(content_usage[list(content_usage.keys())[0]].keys())  # Gets the name of the content in order
+    content_list_names = [content.name for content in content_list]
+
+    x, y = sort_values(content_list_names, content_representation, index_to_sort_on=0)
+
+    # Normalizes number to get a 0-100% interval
+    if normalize:
+        y_arr = np.array(y)
+        y = y_arr / sum(y)
+
+    ax.bar(x, y, align='center', ecolor='black')
+
+    if normalize:
+        ax.set_ylabel('Ratio of messages %')
+    else:
+        ax.set_ylabel('Number of messages')
+    ax.set_title('What type of content is sent in the chat')
+    ax.yaxis.grid(True)
+
+    # Save the figure and show
+    plt.tight_layout()
+    plt.savefig("plots/group_chat_content_usage.png")
+    plt.show()
+
+
+def plot_chat_content_usage_individual(content_usage, normalize=False):
+    """
+    Plots what type of content is sent in the group on individual basis
+    :param content_usage: The content sent
+    :param normalize: If to show in normalized format or in numbers
+    """
+
+    fig = plt.figure(1, (10, 6))
+    ax = fig.add_subplot(1, 1, 1)
+
+    content_list = list(content_usage[list(content_usage.keys())[0]].keys())  # Gets the name of the content in order
+    content_list_names = [content.name for content in content_list]
+
+    x, y, names = [], [], []
+
+    x_pos = np.arange(len(content_list))
+    w = 0.1
+    start = np.floor(len(content_usage) / 2) * - w
+    for i, user in enumerate(content_usage):
+        step = start + w * i
+        x_tmp, y_tmp = sort_values(content_list_names, list(content_usage[user].values()), index_to_sort_on=0)
+        x.append(x_pos + step)
+        y.append(y_tmp)
+        names.append(user)
+
+    # Sort on name
+    test = zip(x, y, names)
+    sorted_by_name = sorted(test, key=lambda tup: tup[2], reverse=False)
+    x_sorted, y_sorted, name_sorted = zip(*sorted_by_name)
+
+    # Plots the bars
+    for i in range(len(x_sorted)):
+        tmp_y = y_sorted[i]
+        if normalize:
+            tmp_y = normalize_values(tmp_y)
+        ax.bar(x_sorted[i], tmp_y, width=w, align='center', ecolor='black', label=name_sorted[i])
+
+
+    if normalize:
+        ax.set_ylabel('Ratio of messages %')
+        ax.set_title('What type of content users sends in the chat (normalized)')
+    else:
+        ax.set_ylabel('Number of messages')
+        ax.set_title('What type of content users sends in the chat')
+
+    ax.yaxis.grid(True)
+
+    ax.set_xticks(x_pos)
+    content_list_names.sort()  # To get them in order
+    ax.set_xticklabels(content_list_names)
+    plt.legend(title="Names")
+
+    # Save the figure and show
+    plt.tight_layout()
+    plt.savefig("plots/group_chat_content_usage.png")
+    plt.show()
+
+
+def normalize_values(values):
+    """
+    Normalizes list
+    :param values: values to normalize
+    :return: normalized nump array
+    """
+    values_arr = np.array(values)
+    return values_arr / sum(values)

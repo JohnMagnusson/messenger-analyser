@@ -29,6 +29,12 @@ def main():
     # chat_activity_during_day = analyser.get_users_activity_under_day()
     # plot_chat_activity_under_day(chat_activity_during_day)
     # plot_individuals_chat_activity_under_day(chat_activity_during_day)
+
+    # Plotting what type of content users use
+    content_usage = analyser.get_users_content_usage()
+    plot_chat_content_usage_individual(content_usage)
+    # plot_chat_content_usage_group(content_usage)
+
     # ok = 3
 
 
